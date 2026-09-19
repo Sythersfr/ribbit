@@ -1,6 +1,52 @@
 (() => {
   const config = document.getElementById("ribbit-bundle-config");
-  if (!config) return;
+
+  function personalizeHomepageHero() {
+    const heading = Array.from(document.querySelectorAll("h1, h2, h3")).find(
+      (element) =>
+        ["generated test data", "image banner"].includes(
+          element.textContent?.trim().toLowerCase(),
+        ),
+    );
+    if (heading) {
+      heading.textContent = "See more. Worry less.";
+      const panel =
+        heading.closest(".banner__box") ||
+        heading.parentElement?.parentElement ||
+        heading.parentElement;
+      const description = panel?.querySelector("p");
+      if (description) {
+        description.textContent =
+          "Meet Lumen Cam: crisp home monitoring paired with Guard Pro for intelligent alerts, secure cloud history, and simple access from anywhere.";
+      }
+      const link = panel?.querySelector("a");
+      if (link) {
+        (link.querySelector("span") || link).textContent = "Shop Lumen Cam";
+      }
+    }
+
+    const brandHeading = Array.from(document.querySelectorAll("h2, h3")).find(
+      (element) => element.textContent?.trim().toLowerCase() === "talk about your brand",
+    );
+    if (brandHeading) {
+      brandHeading.textContent = "Protection that keeps getting smarter";
+      const brandPanel = brandHeading.parentElement?.parentElement || brandHeading.parentElement;
+      const brandDescription = brandPanel?.querySelector("p");
+      if (brandDescription) {
+        brandDescription.textContent =
+          "Lumen pairs dependable camera hardware with a living software service, so every alert is more useful and every moment is easier to find.";
+      }
+    }
+  }
+
+  personalizeHomepageHero();
+  if (!config) {
+    new MutationObserver(personalizeHomepageHero).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    return;
+  }
 
   const cameraVariant = Number(config.dataset.cameraVariant);
   const guardVariant = Number(config.dataset.guardVariant);
@@ -55,5 +101,8 @@
   }
 
   enhanceProductForm();
-  new MutationObserver(enhanceProductForm).observe(document.body, {childList: true, subtree: true});
+  new MutationObserver(() => {
+    personalizeHomepageHero();
+    enhanceProductForm();
+  }).observe(document.body, {childList: true, subtree: true});
 })();
