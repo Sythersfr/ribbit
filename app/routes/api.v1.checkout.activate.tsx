@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
-import { mintContract } from "../sidecar.server";
+import { mintContract } from "../ribbit.server";
 
 function json(data: object, status = 200) {
   return new Response(JSON.stringify(data), {

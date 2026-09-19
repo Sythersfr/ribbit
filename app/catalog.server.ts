@@ -1,4 +1,4 @@
-import { attachPlanToProduct, ensureShopSetup } from "./sidecar.server";
+import { attachPlanToProduct, ensureShopSetup } from "./ribbit.server";
 import prisma from "./db.server";
 
 type Admin = { graphql: (query: string, options?: { variables?: object }) => Promise<Response> };
@@ -16,7 +16,7 @@ async function findProductByHandle(admin: Admin, handle: string) {
   const json = await gql(
     admin,
     `#graphql
-    query SidecarProductByHandle($handle: String!) {
+    query RibbitProductByHandle($handle: String!) {
       productByHandle(handle: $handle) {
         id
         title
@@ -38,7 +38,7 @@ async function createProduct(
   const json = await gql(
     admin,
     `#graphql
-    mutation SidecarProductCreate($product: ProductCreateInput!) {
+    mutation RibbitProductCreate($product: ProductCreateInput!) {
       productCreate(product: $product) {
         product {
           id
@@ -76,7 +76,7 @@ async function setVariant(
   const json = await gql(
     admin,
     `#graphql
-    mutation SidecarVariantUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+    mutation RibbitVariantUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
       productVariantsBulkUpdate(productId: $productId, variants: $variants) {
         productVariants { id price }
         userErrors { field message }
@@ -104,7 +104,7 @@ async function publishToOnlineStore(admin: Admin, productId: string) {
   const pubs = await gql(
     admin,
     `#graphql
-    query SidecarPublications {
+    query RibbitPublications {
       publications(first: 25) {
         nodes {
           id
@@ -121,7 +121,7 @@ async function publishToOnlineStore(admin: Admin, productId: string) {
   await gql(
     admin,
     `#graphql
-    mutation SidecarPublish($id: ID!, $input: [PublicationInput!]!) {
+    mutation RibbitPublish($id: ID!, $input: [PublicationInput!]!) {
       publishablePublish(id: $id, input: $input) {
         userErrors { field message }
       }

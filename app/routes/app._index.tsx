@@ -8,7 +8,7 @@ import { Form, useActionData, useLoaderData, useNavigation } from "react-router"
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { checkoutUrlFor, seedCheckoutCatalog } from "../catalog.server";
-import { ensureShopSetup, ltvMetrics } from "../sidecar.server";
+import { ensureShopSetup, ltvMetrics } from "../ribbit.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -179,7 +179,7 @@ export default function Home() {
         </s-paragraph>
         <s-paragraph>
           With Guard Pro (12 mo): $
-          {(data.metrics.sidecarYear / 100).toFixed(0)}
+          {(data.metrics.subscriptionYear / 100).toFixed(0)}
         </s-paragraph>
         <s-paragraph>
           Extra LTV: ${(data.metrics.lift / 100).toFixed(0)} · attach demo{" "}

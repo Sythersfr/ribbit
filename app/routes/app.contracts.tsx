@@ -6,7 +6,7 @@ import type {
 import { Form, useActionData, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { cancelContract, ensureShopSetup, listContracts } from "../sidecar.server";
+import { cancelContract, ensureShopSetup, listContracts } from "../ribbit.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);

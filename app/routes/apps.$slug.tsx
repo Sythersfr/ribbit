@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react
 import { Form, useActionData, useLoaderData, useNavigation } from "react-router";
 import { parseAppSpec } from "../builder.server";
 import prisma from "../db.server";
-import { verifyContract } from "../sidecar.server";
+import { verifyContract } from "../ribbit.server";
 
 async function generatedApp(slug: string | undefined) {
   if (!slug) throw new Response("Not found", { status: 404 });
@@ -13,7 +13,7 @@ async function generatedApp(slug: string | undefined) {
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const app = await generatedApp(params.slug);
-  return { name: app.name, spec: parseAppSpec(app.specJson) };
+  return { name: app.name, slug: app.slug, spec: parseAppSpec(app.specJson) };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -32,7 +32,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => [
 ];
 
 export default function GeneratedWebApp() {
-  const { spec } = useLoaderData<typeof loader>();
+  const { slug, spec } = useLoaderData<typeof loader>();
   const verification = useActionData<typeof action>();
   const navigation = useNavigation();
   const unlocked = verification?.valid === true;
@@ -49,7 +49,15 @@ export default function GeneratedWebApp() {
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 24px 72px" }}>
         <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <strong style={{ fontSize: 20 }}>{spec.name}</strong>
-          <span style={{ color: "#94A3B8", fontSize: 13 }}>Powered by Ribbit</span>
+          <nav style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <a
+              href={`/apps/${slug}/account`}
+              style={{ color: "#CBD5E1", fontSize: 14, textDecoration: "none" }}
+            >
+              Account
+            </a>
+            <span style={{ color: "#94A3B8", fontSize: 13 }}>Powered by Ribbit</span>
+          </nav>
         </header>
 
         <section style={{ padding: "96px 0 64px", maxWidth: 760 }}>
@@ -150,6 +158,21 @@ export default function GeneratedWebApp() {
               ))}
             </section>
             <div style={{ color: "#86EFAC", marginBottom: 28 }}>● Subscription active</div>
+            <a
+              href={`/apps/${slug}/account`}
+              style={{
+                display: "inline-block",
+                color: "white",
+                background: spec.accentColor,
+                borderRadius: 10,
+                padding: "12px 16px",
+                textDecoration: "none",
+                fontWeight: 700,
+                marginBottom: 24,
+              }}
+            >
+              View account and order
+            </a>
           </>
         )}
 

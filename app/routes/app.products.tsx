@@ -6,10 +6,10 @@ import type {
 import { Form, useActionData, useLoaderData, useNavigation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { attachPlanToProduct, ensureShopSetup, mintContract } from "../sidecar.server";
+import { attachPlanToProduct, ensureShopSetup, mintContract } from "../ribbit.server";
 
 const PRODUCTS_QUERY = `#graphql
-  query SidecarProducts {
+  query RibbitProducts {
     products(first: 25) {
       nodes {
         id

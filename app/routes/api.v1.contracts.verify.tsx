@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { getCredentialByKey, verifyContract } from "../sidecar.server";
+import { getCredentialByKey, verifyContract } from "../ribbit.server";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",

@@ -3,7 +3,7 @@ import {render} from 'preact';
 import {useState} from 'preact/hooks';
 
 const APP_ORIGIN = 'https://unified-reduction-vcr-webshots.trycloudflare.com';
-const COMPANION_APP_URL = `${APP_ORIGIN}/apps/lumen-guardian-demo`;
+const COMPANION_APP_URL = `${APP_ORIGIN}/apps/lumen-guardian-demo/account`;
 
 export default function extension() {
   render(<ThankYou />, document.body);

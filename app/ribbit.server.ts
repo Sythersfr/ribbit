@@ -120,6 +120,13 @@ export async function verifyContract(input: {
     contract_id: contract.id,
     ...(input.licenseKey ? { license_key: contract.licenseKey } : {}),
     account: { email: contract.email },
+    order: {
+      id: contract.shopifyOrderId,
+      reference: contract.shopifyOrderId
+        ? `#${contract.shopifyOrderId.split("/").pop()?.replace("demo-order-", "")}`
+        : "Demo contract",
+      connected_at: contract.createdAt.toISOString(),
+    },
     plan: {
       id: contract.plan.handle,
       name: contract.plan.name,
@@ -199,14 +206,14 @@ export async function listContracts(shop: string) {
 
 export function ltvMetrics(hardwareCents: number, monthlyCents: number, attachRate: number) {
   const hardwareOnly = hardwareCents;
-  const sidecarYear = hardwareCents + monthlyCents * 12;
+  const subscriptionYear = hardwareCents + monthlyCents * 12;
   return {
     hardwareCents,
     monthlyCents,
     attachRate,
     hardwareOnly,
-    sidecarYear,
-    lift: sidecarYear - hardwareOnly,
+    subscriptionYear,
+    lift: subscriptionYear - hardwareOnly,
   };
 }
 
@@ -220,7 +227,7 @@ export async function mintContractsFromRecentOrders(
   const email = options.email?.trim().toLowerCase();
   const response = await admin.graphql(
     `#graphql
-    query SidecarRecentOrders($query: String) {
+    query RibbitRecentOrders($query: String) {
       orders(first: 25, sortKey: CREATED_AT, reverse: true, query: $query) {
         nodes {
           id
