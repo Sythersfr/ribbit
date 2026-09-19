@@ -21,7 +21,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const form = await request.formData();
   return verifyContract({
     shop: app.shop,
-    licenseKey: String(form.get("licenseKey") || "").trim(),
+    email: String(form.get("email") || "").trim(),
   });
 }
 
@@ -82,19 +82,22 @@ export default function GeneratedWebApp() {
               boxShadow: "0 24px 80px #00000055",
             }}
           >
-            <h2 style={{ marginTop: 0 }}>Activate your subscription</h2>
+            <h2 style={{ marginTop: 0 }}>Sign in to your account</h2>
             <p style={{ color: "#94A3B8", lineHeight: 1.5 }}>
-              Enter the license issued with your Shopify order to unlock {spec.name}.
+              Use the same email address you entered at checkout to unlock {spec.name}.
             </p>
             {verification && !verification.valid ? (
-              <p style={{ color: "#FCA5A5" }}>That license is not active. Check it and try again.</p>
+              <p style={{ color: "#FCA5A5" }}>
+                We could not find an active subscription for that email.
+              </p>
             ) : null}
             <Form method="post" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <input
-                name="licenseKey"
+                name="email"
+                type="email"
                 required
-                placeholder="RBT-GUARD-…"
-                aria-label="License key"
+                placeholder="you@example.com"
+                aria-label="Checkout email"
                 style={{
                   flex: "1 1 260px",
                   padding: "14px 16px",
@@ -117,11 +120,11 @@ export default function GeneratedWebApp() {
                   cursor: "pointer",
                 }}
               >
-                {navigation.state === "idle" ? spec.ctaLabel : "Checking…"}
+                {navigation.state === "idle" ? "Sign in" : "Checking…"}
               </button>
             </Form>
             <p style={{ color: "#64748B", fontSize: 12, marginBottom: 0 }}>
-              Demo license: RBT-GUARD-9K2P
+              Demo account: demo@lumen.example
             </p>
           </section>
         ) : (

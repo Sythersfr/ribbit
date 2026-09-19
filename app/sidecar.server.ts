@@ -72,13 +72,8 @@ export async function verifyContract(input: {
   licenseKey?: string;
   email?: string;
 }) {
-  const where = input.licenseKey
-    ? { licenseKey: input.licenseKey }
-    : input.email
-      ? { shop_email: { shop: input.shop, email: input.email } }
-      : null;
-
-  if (!where) {
+  const normalizedEmail = input.email?.trim().toLowerCase();
+  if (!input.licenseKey && !normalizedEmail) {
     return {
       valid: false,
       reason: "missing_identifier",
@@ -86,16 +81,25 @@ export async function verifyContract(input: {
     };
   }
 
-  const contract = input.licenseKey
+  let contract = input.licenseKey
     ? await prisma.contract.findUnique({
         where: { licenseKey: input.licenseKey },
         include: { plan: true },
       })
-    : await prisma.contract.findFirst({
-        where: { shop: input.shop, email: input.email },
-        include: { plan: true },
-        orderBy: { createdAt: "desc" },
-      });
+    : null;
+
+  if (!contract && normalizedEmail) {
+    const accountContracts = await prisma.contract.findMany({
+      where: { shop: input.shop },
+      include: { plan: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    contract =
+      accountContracts.find(
+        (candidate) => candidate.email.trim().toLowerCase() === normalizedEmail,
+      ) ?? null;
+  }
 
   if (!contract || contract.shop !== input.shop) {
     return { valid: false, reason: "not_found" };
@@ -114,7 +118,8 @@ export async function verifyContract(input: {
     valid: true,
     status: contract.status,
     contract_id: contract.id,
-    license_key: contract.licenseKey,
+    ...(input.licenseKey ? { license_key: contract.licenseKey } : {}),
+    account: { email: contract.email },
     plan: {
       id: contract.plan.handle,
       name: contract.plan.name,
@@ -161,7 +166,7 @@ export async function mintContract(input: {
       shop: input.shop,
       shopifyOrderId: input.shopifyOrderId,
       licenseKey: generateLicenseKey(),
-      email: input.email,
+      email: input.email.trim().toLowerCase(),
       status: "active",
       planId: plan.id,
       productGid: input.productGid ?? plan.productGid,

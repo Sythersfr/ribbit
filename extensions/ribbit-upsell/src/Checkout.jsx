@@ -4,6 +4,8 @@ import {useEffect, useState} from 'preact/hooks';
 
 const GUARD_VARIANT_ID = 'gid://shopify/ProductVariant/50354126618658';
 const GUARD_PRODUCT_ID = 'gid://shopify/Product/10222137016354';
+const COMPANION_APP_URL =
+  'https://unified-reduction-vcr-webshots.trycloudflare.com/apps/lumen-guardian-demo';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -64,10 +66,15 @@ function Extension() {
   if (hasGuard) {
     return (
       <s-banner heading="Ribbit" tone="success">
-        <s-text>
-          Bundle locked in: Lumen Cam + Guard Pro monthly. Ribbit issues a
-          license after payment.
-        </s-text>
+        <s-stack direction="block" gap="base">
+          <s-text>
+            Bundle locked in: Lumen Cam + Guard Pro monthly. After payment,
+            sign in to the companion app with your checkout email.
+          </s-text>
+          <s-link href={COMPANION_APP_URL}>
+            Open Lumen Guardian
+          </s-link>
+        </s-stack>
       </s-banner>
     );
   }
@@ -78,13 +85,20 @@ function Extension() {
 
   async function addGuard() {
     if (!canAdd) return;
-    const change = {
-      type: 'addCartLine',
-      merchandiseId: GUARD_VARIANT_ID,
-      quantity: 1,
-    };
-    if (sellingPlanId) change.sellingPlanId = sellingPlanId;
-    const result = await shopify.applyCartLinesChange(change);
+    const result = await shopify.applyCartLinesChange(
+      sellingPlanId
+        ? {
+            type: 'addCartLine',
+            merchandiseId: GUARD_VARIANT_ID,
+            quantity: 1,
+            sellingPlanId,
+          }
+        : {
+            type: 'addCartLine',
+            merchandiseId: GUARD_VARIANT_ID,
+            quantity: 1,
+          },
+    );
     if (result.type === 'error') setError(result.message);
   }
 
