@@ -1,20 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-  useNavigation,
-} from "react-router";
+import { Form, useActionData, useLoaderData, useNavigation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { checkoutUrlFor, seedCheckoutCatalog } from "../catalog.server";
-import { ensureShopSetup, ltvMetrics, mintContractsFromRecentOrders } from "../sidecar.server";
+import { ensureShopSetup, ltvMetrics } from "../sidecar.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -40,13 +34,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
-  const form = await request.formData();
-  const intent = String(form.get("intent") || "seed");
   try {
-    if (intent === "sync") {
-      const minted = await mintContractsFromRecentOrders(admin, session.shop);
-      return { ok: true, minted };
-    }
     const catalog = await seedCheckoutCatalog(admin, session.shop);
     return { ok: true, ...catalog };
   } catch (error) {
@@ -57,35 +45,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Home() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const orderSync = useFetcher<typeof action>();
-  const { state: orderSyncStatus, submit: submitOrderSync } = orderSync;
-  const orderSyncState = useRef(orderSyncStatus);
   const navigation = useNavigation();
   const seeding = navigation.state !== "idle";
   const [license, setLicense] = useState(data.seedLicense);
   const [result, setResult] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const checkoutUrl = actionData && "checkoutUrl" in actionData ? actionData.checkoutUrl : data.checkoutUrl;
-  const syncedLicenses =
-    orderSync.data && "minted" in orderSync.data ? orderSync.data.minted : [];
-
-  useEffect(() => {
-    orderSyncState.current = orderSyncStatus;
-  }, [orderSyncStatus]);
-
-  useEffect(() => {
-    const sync = () => {
-      if (orderSyncState.current === "idle") {
-        submitOrderSync({ intent: "sync" }, { method: "post" });
-      }
-    };
-    const first = window.setTimeout(sync, 1_000);
-    const interval = window.setInterval(sync, 5_000);
-    return () => {
-      window.clearTimeout(first);
-      window.clearInterval(interval);
-    };
-  }, [submitOrderSync]);
 
   const verify = async () => {
     setBusy(true);
@@ -122,18 +87,6 @@ export default function Home() {
         {actionData && "error" in actionData && actionData.error ? (
           <s-banner tone="critical">{actionData.error}</s-banner>
         ) : null}
-        {actionData && "minted" in actionData && actionData.minted ? (
-          <s-banner tone="success">
-            {actionData.minted.length
-              ? actionData.minted.join(" · ")
-              : "No matching Lumen orders yet. Complete checkout first."}
-          </s-banner>
-        ) : null}
-        {syncedLicenses?.length ? (
-          <s-banner tone="success">
-            Auto-issued {syncedLicenses.join(" · ")}
-          </s-banner>
-        ) : null}
         <s-stack direction="inline" gap="base">
           <Form method="post">
             <input type="hidden" name="intent" value="seed" />
@@ -153,12 +106,6 @@ export default function Home() {
           <s-link href={data.storeUrl} target="_blank">
             Open storefront
           </s-link>
-          <Form method="post">
-            <input type="hidden" name="intent" value="sync" />
-            <s-button type="submit" {...(seeding ? { loading: true } : {})}>
-              Import licenses from orders
-            </s-button>
-          </Form>
         </s-stack>
         <s-paragraph>
           Checkout test card: number <s-text>1</s-text>, any future expiry, any
@@ -166,11 +113,8 @@ export default function Home() {
           password from Shopify admin → Online Store → Preferences.
         </s-paragraph>
         <s-paragraph>
-          <s-text>
-            {orderSyncStatus === "idle"
-              ? "Auto-sync active · checking orders every 5 seconds"
-              : "Checking Shopify for new orders…"}
-          </s-text>
+          Account access is connected securely on the Thank You page after
+          checkout.
         </s-paragraph>
       </s-section>
 

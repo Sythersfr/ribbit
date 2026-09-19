@@ -19,9 +19,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
   const app = await generatedApp(params.slug);
   const form = await request.formData();
+  const email = String(form.get("email") || "").trim().toLowerCase();
+
   return verifyContract({
     shop: app.shop,
-    email: String(form.get("email") || "").trim(),
+    email,
   });
 }
 

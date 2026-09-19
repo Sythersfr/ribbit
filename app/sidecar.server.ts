@@ -213,13 +213,15 @@ export function ltvMetrics(hardwareCents: number, monthlyCents: number, attachRa
 export async function mintContractsFromRecentOrders(
   admin: { graphql: (query: string, options?: { variables?: object }) => Promise<Response> },
   shop: string,
+  options: { email?: string } = {},
 ) {
   const { plan } = await ensureShopSetup(shop);
   const credential = await prisma.shopCredential.findUnique({ where: { shop } });
+  const email = options.email?.trim().toLowerCase();
   const response = await admin.graphql(
     `#graphql
-    query SidecarRecentOrders {
-      orders(first: 10, sortKey: CREATED_AT, reverse: true) {
+    query SidecarRecentOrders($query: String) {
+      orders(first: 25, sortKey: CREATED_AT, reverse: true, query: $query) {
         nodes {
           id
           name
@@ -234,6 +236,7 @@ export async function mintContractsFromRecentOrders(
         }
       }
     }`,
+    { variables: { query: email ? `email:${email}` : null } },
   );
   const json = await response.json();
   const orders = json.data?.orders?.nodes ?? [];
@@ -242,6 +245,8 @@ export async function mintContractsFromRecentOrders(
   const minted: string[] = [];
 
   for (const order of orders) {
+    if (email && (order.email || "").trim().toLowerCase() !== email) continue;
+
     const existing = await prisma.contract.findUnique({
       where: { shopifyOrderId: order.id },
     });
