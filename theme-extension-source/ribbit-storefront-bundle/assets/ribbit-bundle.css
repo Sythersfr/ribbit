@@ -1,0 +1,20 @@
+.ribbit-bundle-card {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid rgba(27, 112, 69, 0.3);
+  border-radius: 12px;
+  background: #f2fbf5;
+  color: #14261c;
+}
+
+.ribbit-bundle-card__eyebrow {
+  margin-bottom: 0.4rem;
+  color: #14733e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.ribbit-bundle-card strong { display: block; font-size: 1.1rem; }
+.ribbit-bundle-card p { margin: 0.45rem 0; }
+.ribbit-bundle-card span { color: #14733e; font-size: 0.85rem; font-weight: 600; }
